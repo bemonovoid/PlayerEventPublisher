@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace MusicBeePlugin
@@ -13,24 +10,22 @@ namespace MusicBeePlugin
         public class SerializedConfig
         {
             public string EndpointUrl { get; set; }
-            public bool Suspended { get; set; }
         }
 
         public static string EndpointUrl { get; set; }
-        public static bool Suspended { get; set; }
 
         public static void SaveConfig(string path)
         {
             var config = new SerializedConfig()
             {
-                EndpointUrl = EndpointUrl,
-                Suspended = Suspended
+                EndpointUrl = EndpointUrl
             };
 
             var serializer = new XmlSerializer(typeof(SerializedConfig));
             var writer = new StringWriter();
             serializer.Serialize(writer, config);
             File.WriteAllText(path, writer.ToString(), Encoding.UTF8);
+            Console.WriteLine("Configuration was saved.");
         }
 
         public static void LoadConfig(string path)
@@ -38,7 +33,6 @@ namespace MusicBeePlugin
             if (!File.Exists(path))
             {
                 EndpointUrl = "";
-                Suspended = true;
             }
             else
             {
@@ -48,8 +42,8 @@ namespace MusicBeePlugin
                 var config = (SerializedConfig) serializer.Deserialize(reader);
 
                 EndpointUrl = config.EndpointUrl;
-                Suspended = config.Suspended;
             }
+            Console.WriteLine("Configuration was loaded.");
         }
     }
 }

@@ -10,15 +10,18 @@ namespace MusicBeePlugin
         public class SerializedConfig
         {
             public string EndpointUrl { get; set; }
+            public bool Enabled { get; set; }
         }
 
         public static string EndpointUrl { get; set; }
+        public static bool Enabled { get; set; }
 
         public static void SaveConfig(string path)
         {
             var config = new SerializedConfig()
             {
-                EndpointUrl = EndpointUrl
+                EndpointUrl = EndpointUrl,
+                Enabled = Enabled
             };
 
             var serializer = new XmlSerializer(typeof(SerializedConfig));
@@ -33,6 +36,7 @@ namespace MusicBeePlugin
             if (!File.Exists(path))
             {
                 EndpointUrl = "";
+                Enabled = true;
             }
             else
             {
@@ -42,6 +46,7 @@ namespace MusicBeePlugin
                 var config = (SerializedConfig) serializer.Deserialize(reader);
 
                 EndpointUrl = config.EndpointUrl;
+                Enabled = config.Enabled;
             }
             Console.WriteLine("Configuration was loaded.");
         }

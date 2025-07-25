@@ -48,13 +48,20 @@ namespace MusicBeePlugin
         public void SaveSettings()
         {
             string dataPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
-
-            //Console.WriteLine($"Saving config... Old endpointUrl: {Configuration.EndpointUrl}, new endpointUrl: {endpointUrlTextBox.Text}");
             Configuration.SaveConfig(dataPath);
         }
 
         public void Close(PluginCloseReason reason)
         {
+            switch (reason)
+            {
+                case PluginCloseReason.UserDisabled:
+                    Configuration.Enabled = false;
+                    break;
+                case PluginCloseReason.MusicBeeClosing:
+                case PluginCloseReason.StopNoUnload:
+                    break;
+            }
             string dataPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
             Configuration.SaveConfig(dataPath);
         }
@@ -68,6 +75,8 @@ namespace MusicBeePlugin
 
         public void ReceiveNotification(string sourceFileUrl, NotificationType type)
         {
+            if (!Configuration.Enabled) return;
+
             var fileUrl = sourceFileUrl;
             var data = new Dictionary<string, string>();
            
@@ -82,7 +91,7 @@ namespace MusicBeePlugin
                 case NotificationType.PluginStartup:
                     string dataPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
                     Configuration.LoadConfig(dataPath);
-                    EventPublisherClient.PublishHealthCheckNotification();
+                    Configuration.Enabled = true;
                     break;
                 case NotificationType.RatingChanging:
                     break;

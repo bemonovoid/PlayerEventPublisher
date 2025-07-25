@@ -22,7 +22,7 @@ namespace MusicBeePlugin
 
         private void testConnectionBtn_Click(object sender, EventArgs e)
         {
-            var response = EventPublisherClient.PublishNotification("healthcheckfile", NotificationType.HealthCheck, new Dictionary<string, string>());
+            var response = EventPublisherClient.PublishHealthCheckNotification();
             
             if (response.Success)
             {

@@ -65,7 +65,7 @@
             this.applyBtn.Name = "applyBtn";
             this.applyBtn.Size = new System.Drawing.Size(75, 23);
             this.applyBtn.TabIndex = 4;
-            this.applyBtn.Text = "Apply";
+            this.applyBtn.Text = "OK";
             this.applyBtn.UseVisualStyleBackColor = true;
             this.applyBtn.Click += new System.EventHandler(this.applyBtn_Click);
             // 

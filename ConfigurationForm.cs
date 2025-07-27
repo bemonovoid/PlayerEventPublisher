@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using static MusicBeePlugin.Plugin;
 
@@ -7,12 +6,9 @@ namespace MusicBeePlugin
 {
     public partial class ConfigurationForm : Form
     {
-        private string configFilePath;
-
-        public ConfigurationForm(string configFilePath)
+        public ConfigurationForm()
         {
             InitializeComponent();
-            this.configFilePath = configFilePath;
         }
 
         private void ConfigurationForm_Load(object sender, EventArgs e)
@@ -36,7 +32,6 @@ namespace MusicBeePlugin
 
         private void applyBtn_Click(object sender, EventArgs e)
         {
-            Configuration.SaveConfig(configFilePath);
             this.Close();
         }
     }

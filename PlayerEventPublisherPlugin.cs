@@ -17,6 +17,9 @@ namespace MusicBeePlugin
             mbApiInterface = new MusicBeeApiInterface();
             mbApiInterface.Initialise(apiInterfacePtr);
 
+            string dataPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
+            Configuration.LoadConfig(dataPath);
+
             about.PluginInfoVersion = PluginInfoVersion;
             about.Name = "Player Event Publisher";
             about.Description = "Publishes player event notifications to rest api endpoint";
@@ -38,8 +41,7 @@ namespace MusicBeePlugin
             if (configurationForm == null || configurationForm.IsDisposed) 
             {
                 string configFilePath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
-                Configuration.LoadConfig(configFilePath);
-                configurationForm = new ConfigurationForm(configFilePath);
+                configurationForm = new ConfigurationForm();
             }
             configurationForm.Show();
             return true;
@@ -75,33 +77,39 @@ namespace MusicBeePlugin
 
         public void ReceiveNotification(string sourceFileUrl, NotificationType type)
         {
-            if (!Configuration.Enabled) return;
-
             var fileUrl = sourceFileUrl;
             var data = new Dictionary<string, string>();
            
             switch (type)
             {
                 case NotificationType.PlayCountersChanged:
-                    data.Add("playCount", mbApiInterface.Library_GetFileProperty(fileUrl, FilePropertyType.PlayCount));
+                    data.Add("nowPlayingPlayCount", mbApiInterface.NowPlaying_GetFileProperty(FilePropertyType.PlayCount));
+                    data.Add("pendingPlayCount", mbApiInterface.Pending_GetFileProperty(FilePropertyType.PlayCount));
+                    data.Add("libraryPlayCount", mbApiInterface.Library_GetFileProperty(fileUrl, FilePropertyType.PlayCount));
                     break;
                 case NotificationType.PlayStateChanged:
                     data.Add("playState", mbApiInterface.Player_GetPlayState().ToString());
                     break;
                 case NotificationType.PluginStartup:
-                    string dataPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), configFileName);
-                    Configuration.LoadConfig(dataPath);
-                    Configuration.Enabled = true;
+                    Configuration.Enabled = true; // Plugin starts only when it is enabled (Plugin button Enable/Disable).
                     break;
                 case NotificationType.RatingChanging:
-                    break;
                 case NotificationType.RatingChanged:
-                    data.Add("rating", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating));
-                    data.Add("ratingLove", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove));
+                    data.Add("nowPlayingRating", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Rating));
+                    data.Add("pendingRating", mbApiInterface.Pending_GetFileTag(MetaDataType.Rating));
+                    data.Add("libraryRating", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating));
+                    data.Add("nowPlayingRatingLove", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.RatingLove));
+                    data.Add("pendingRatingLove", mbApiInterface.Pending_GetFileTag(MetaDataType.RatingLove));
+                    data.Add("libraryRatingLove", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove));
                     break;
                 case NotificationType.TagsChanging:
-                    break;
                 case NotificationType.TagsChanged:
+                    data.Add("nowPlayingRating", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Rating));
+                    data.Add("pendingRating", mbApiInterface.Pending_GetFileTag(MetaDataType.Rating));
+                    data.Add("libraryRating", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating));
+                    data.Add("nowPlayingRatingLove", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.RatingLove));
+                    data.Add("pendingRatingLove", mbApiInterface.Pending_GetFileTag(MetaDataType.RatingLove));
+                    data.Add("libraryRatingLove", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove));
                     break;
                 case NotificationType.TrackChanging:
                     fileUrl = mbApiInterface.NowPlaying_GetFileUrl();
@@ -109,7 +117,7 @@ namespace MusicBeePlugin
                 case NotificationType.TrackChanged:
                     break;
             }
-            if (fileUrl != null && fileUrl.Length > 0) 
+            if (fileUrl != null && fileUrl.Length > 0 && Configuration.Enabled) 
             {
                 EventPublisherClient.PublishNotification(fileUrl, type, data);
             }

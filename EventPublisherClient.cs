@@ -26,7 +26,9 @@ namespace MusicBeePlugin
             using (var wb = new WebClient())
             {
                 var url = Configuration.EndpointUrl;
+                wb.Headers[HttpRequestHeader.UserAgent] = "MusicBee";
                 wb.Headers[HttpRequestHeader.ContentType] = "application/json";
+                wb.Headers["MusicBee_PlayerMachineName"] = Environment.MachineName;
 
                 var fileUrlBase64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(sourceFileUrl));
 

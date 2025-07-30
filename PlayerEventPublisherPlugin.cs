@@ -79,7 +79,7 @@ namespace MusicBeePlugin
         {
             var fileUrl = sourceFileUrl;
             var data = new Dictionary<string, string>();
-           
+
             switch (type)
             {
                 case NotificationType.PlayCountersChanged:

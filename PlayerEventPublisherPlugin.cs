@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace MusicBeePlugin
 {
@@ -83,9 +84,13 @@ namespace MusicBeePlugin
             switch (type)
             {
                 case NotificationType.PlayCountersChanged:
-                    data.Add("nowPlayingPlayCount", mbApiInterface.NowPlaying_GetFileProperty(FilePropertyType.PlayCount));
-                    data.Add("pendingPlayCount", mbApiInterface.Pending_GetFileProperty(FilePropertyType.PlayCount));
-                    data.Add("libraryPlayCount", mbApiInterface.Library_GetFileProperty(fileUrl, FilePropertyType.PlayCount));
+                    var libraryPlayCount = mbApiInterface.Library_GetFileProperty(fileUrl, FilePropertyType.PlayCount);
+                    if (libraryPlayCount != null && libraryPlayCount.Length > 0)
+                    {
+                        data.Add("libraryPlayCount", libraryPlayCount);
+                    }
+                    //data.Add("nowPlayingPlayCount", mbApiInterface.NowPlaying_GetFileProperty(FilePropertyType.PlayCount));
+                    //data.Add("pendingPlayCount", mbApiInterface.Pending_GetFileProperty(FilePropertyType.PlayCount));
                     break;
                 case NotificationType.PlayStateChanged:
                     data.Add("playState", mbApiInterface.Player_GetPlayState().ToString());
@@ -95,21 +100,26 @@ namespace MusicBeePlugin
                     break;
                 case NotificationType.RatingChanging:
                 case NotificationType.RatingChanged:
-                    data.Add("nowPlayingRating", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Rating));
-                    data.Add("pendingRating", mbApiInterface.Pending_GetFileTag(MetaDataType.Rating));
-                    data.Add("libraryRating", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating));
-                    data.Add("nowPlayingRatingLove", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.RatingLove));
-                    data.Add("pendingRatingLove", mbApiInterface.Pending_GetFileTag(MetaDataType.RatingLove));
-                    data.Add("libraryRatingLove", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove));
+                    var libraryRating = mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating);
+                    if (libraryRating != null && libraryRating.Length > 0)
+                    {
+                        data.Add("libraryRating", libraryRating);
+                    }
+                    //data.Add("nowPlayingRating", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Rating));
+                    //data.Add("pendingRating", mbApiInterface.Pending_GetFileTag(MetaDataType.Rating));
                     break;
-                case NotificationType.TagsChanging:
+                //case NotificationType.TagsChanging:
                 case NotificationType.TagsChanged:
-                    data.Add("nowPlayingRating", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Rating));
-                    data.Add("pendingRating", mbApiInterface.Pending_GetFileTag(MetaDataType.Rating));
-                    data.Add("libraryRating", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Rating));
-                    data.Add("nowPlayingRatingLove", mbApiInterface.NowPlaying_GetFileTag(MetaDataType.RatingLove));
-                    data.Add("pendingRatingLove", mbApiInterface.Pending_GetFileTag(MetaDataType.RatingLove));
-                    data.Add("libraryRatingLove", mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove));
+                    var libraryLyrics = mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.Lyrics);
+                    if (libraryLyrics != null && libraryLyrics.Length > 0) 
+                    {
+                        data.Add("libraryLyrics", ToBase64String(libraryLyrics));
+                    }
+                    var libraryRatingLove = mbApiInterface.Library_GetFileTag(fileUrl, MetaDataType.RatingLove);
+                    if (libraryRatingLove != null && libraryRatingLove.Length > 0)
+                    {
+                        data.Add("libraryRatingLove", libraryRatingLove);
+                    }
                     break;
                 case NotificationType.TrackChanging:
                     fileUrl = mbApiInterface.NowPlaying_GetFileUrl();
@@ -121,6 +131,12 @@ namespace MusicBeePlugin
             {
                 EventPublisherClient.PublishNotification(fileUrl, type, data);
             }
+        }
+
+        private static String ToBase64String(string value)
+        {
+            if (value == null) return null;
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
     }
 }
